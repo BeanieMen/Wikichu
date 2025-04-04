@@ -1,7 +1,11 @@
-import styles from "../cssmodules/inventory.module.css";
+import styles from "../cssmodules/marketplace.module.css";
 import Image from "next/image";
-export default function InventoryList(
-  items: { stickerUrl: string; stickerName: string; stickter: string }[],
+export default function MarketPlaceList(
+  items: {
+    stickerName: string;
+    stickerUrl: string;
+    stickerDesc: string;
+  }[],
 ) {
   return (
     <ul className={styles.itemUl}>
@@ -16,7 +20,7 @@ export default function InventoryList(
               height={200}
               className={styles.imageEle}
             />
-            <p>{item.stickter}</p>
+            <p>{item.stickerDesc}</p>
           </div>
         </li>
       ))}
