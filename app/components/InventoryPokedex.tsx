@@ -3,6 +3,7 @@
 import { UserButton, useUser } from "@clerk/nextjs";
 import { useEffect } from "react";
 import Image from "next/image";
+import Link from "next/link";
 
 interface Sticker {
   name: string;
@@ -46,10 +47,16 @@ export default function InventoryPokédex({ items }: InventoryTableProps) {
           className="text-4xl font-bold text-black"
           style={{ fontFamily: "Pokemon" }}
         >
-          WikiChuDex
+          WikiDex
         </h1>
         <div className="flex items-center space-x-6">
-          <div className="text-lg font-semibold text-gray-700">Inventory</div>
+          <Link href={"/"} className="text-gray-700">
+            WikiChu
+          </Link>
+          <Link href={"/marketplace"} className="text-gray-700">
+            Marketplace
+          </Link>
+
           <UserButton
             appearance={{
               elements: {
@@ -75,8 +82,6 @@ export default function InventoryPokédex({ items }: InventoryTableProps) {
                 #{String(index + 1).padStart(3, "0")}
               </div>
               <Image
-                src
-                alt
                 src={sticker.sourceUrl}
                 alt={sticker.name}
                 width={500}
@@ -91,14 +96,14 @@ export default function InventoryPokédex({ items }: InventoryTableProps) {
                 {sticker.stickerDesc}
               </p>
               <div className="mt-auto text-sm font-semibold text-gray-700">
-                Rarity:{" "}
+                Rarity:
                 <span
                   className={`${
                     sticker.rarity >= 5
                       ? "text-purple-700"
                       : sticker.rarity >= 3
-                        ? "text-yellow-600"
-                        : "text-gray-600"
+                      ? "text-yellow-600"
+                      : "text-gray-600"
                   }`}
                 >
                   {sticker.rarity}/5

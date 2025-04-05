@@ -1,6 +1,6 @@
 import sqlite3 from "sqlite3";
 
-const database = new sqlite3.Database("main.db");
+export const database = new sqlite3.Database("main.db");
 
 // 🧱 Initialize all tables
 export function initDatabase() {
@@ -8,7 +8,6 @@ export function initDatabase() {
     CREATE TABLE IF NOT EXISTS Users (
       id TEXT PRIMARY KEY, -- from Clerk
       money INTEGER NOT NULL DEFAULT 0,
-      xp INTEGER NOT NULL DEFAULT 0
     );`;
 
   const createStickersTable = `
@@ -56,11 +55,13 @@ export async function addUser(id: string, money = 0, xp = 0): Promise<void> {
   });
 }
 
-export async function getUserById(userId: string): Promise<any> {
+export async function getUserById(
+  userId: string
+): Promise<{ id: string; money: number }> {
   return new Promise((resolve, reject) => {
     database.get("SELECT * FROM Users WHERE id = ?", [userId], (err, row) => {
       if (err) reject(err);
-      else resolve(row);
+      else resolve(row as { id: string; money: number });
     });
   });
 }
