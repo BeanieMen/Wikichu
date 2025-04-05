@@ -1,6 +1,5 @@
 "use client";
 import { SignInButton } from "@clerk/nextjs";
-import Link from "next/link";
 
 export default function HeroLanding() {
   return (
@@ -30,16 +29,10 @@ export default function HeroLanding() {
           </p>
           <div className="flex space-x-4 justify-center">
             <SignInButton>
-              <button className="bg-white text-blue-500 px-8 py-4 rounded-full font-bold shadow-lg hover:bg-gray-100 transition">
+              <button className="bg-white text-blue-500 px-8 py-4 rounded-full font-bold shadow-lg p hover:bg-gray-100 transition">
                 Get Started
               </button>
             </SignInButton>
-            <Link
-              href="/learn-more"
-              className="bg-transparent border border-white text-white px-8 py-4 rounded-full font-bold hover:bg-white hover:text-blue-500 transition"
-            >
-              Learn More
-            </Link>
           </div>
         </div>
       </main>
