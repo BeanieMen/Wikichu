@@ -14,12 +14,10 @@ export async function POST(request: NextRequest) {
       {
         status: 400,
         headers: { "Content-Type": "application/json" },
-      }
+      },
     );
   }
   const userStickers = await getUserStickers(userId);
-  console.log(userId)
-  console.log(userStickers)
   return new Response(JSON.stringify(userStickers), {
     status: 200,
     headers: {
