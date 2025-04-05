@@ -42,11 +42,11 @@ export interface UserSticker {
   stickerDesc: string;
 }
 
-export async function addUser(id: string, money = 0, xp = 0): Promise<void> {
+export async function addUser(id: string, money = 0): Promise<void> {
   return new Promise((resolve, reject) => {
     database.run(
-      "INSERT OR IGNORE INTO Users (id, money, xp) VALUES (?, ?, ?)",
-      [id, money, xp],
+      "INSERT OR IGNORE INTO Users (id, money) VALUES (?, ?)",
+      [id, money],
       (err) => {
         if (err) reject(err);
         else resolve();
@@ -66,18 +66,7 @@ export async function getUserById(
   });
 }
 
-export async function addXp(userId: string, xpAmount: number): Promise<void> {
-  return new Promise((resolve, reject) => {
-    database.run(
-      "UPDATE Users SET xp = xp + ? WHERE id = ?",
-      [xpAmount, userId],
-      (err) => {
-        if (err) reject(err);
-        else resolve();
-      }
-    );
-  });
-}
+
 
 export async function addMoney(userId: string, amount: number): Promise<void> {
   return new Promise((resolve, reject) => {
@@ -127,18 +116,13 @@ export async function getUserStickers(userId: string): Promise<UserSticker[]> {
   });
 }
 
-// 📊 Get combined user stats for profile view
 export async function getUserStats(userId: string): Promise<{
   money: number;
-  xp: number;
-  stickerCount: number;
 }> {
   return new Promise((resolve, reject) => {
     const sql = `
       SELECT 
         u.money, 
-        u.xp, 
-        COUNT(i.id) as stickerCount
       FROM Users u
       LEFT JOIN Inventory i ON u.id = i.user_id
       WHERE u.id = ?
@@ -148,7 +132,7 @@ export async function getUserStats(userId: string): Promise<{
       if (err) reject(err);
       else
         resolve(
-          row as unknown as { money: number; xp: number; stickerCount: number }
+          row as unknown as { money: number; stickerCount: number }
         );
     });
   });
