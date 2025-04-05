@@ -1,0 +1,29 @@
+body {
+    background-color: #008080;
+}
+.itemUl {
+    background-color: white;
+    margin: 1rem;
+}
+.itemLi {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    color: black;
+    padding: 1rem;
+    margin: 1rem;
+}
+.itemLi h3 {
+    border-bottom: 5px solid black;
+    padding: 10px;
+}
+.itemLiDiv {
+    margin-top: 1rem;
+    display: flex;
+    gap: 0.5rem;
+}
+.imageEle {
+    border-radius: 50%;
+    width: 15svw;
+    height: 15svw;
+}
