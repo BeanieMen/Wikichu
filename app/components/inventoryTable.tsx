@@ -2,7 +2,7 @@ import Image from "next/image";
 
 const rarityMap = ["common", "uncommon", "rare", "epic", "legendary"];
 
-interface Item {
+interface Sticker {
   name: string;
   sourceUrl: string;
   rarity: number;
@@ -10,7 +10,7 @@ interface Item {
 }
 
 interface InventoryTableProps {
-  items: Item[];
+  items: Sticker[];
 }
 
 export default function InventoryTable({ items }: InventoryTableProps) {
