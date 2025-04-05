@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
-import InventoryTable from "../components/InventoryTable";
+import InventoryPokedex from "../components/InventoryPokedex";
 
 interface Item {
   name: string;
@@ -11,7 +11,7 @@ interface Item {
   stickerDesc: string;
 }
 
-export default function InventoryPage() {
+export default function PokedexPage() {
   const [items, setItems] = useState<Item[]>([]);
   const { user } = useUser();
 
@@ -40,7 +40,7 @@ export default function InventoryPage() {
 
   return (
     <div>
-      <InventoryTable items={items} />
+      <InventoryPokedex items={items} />
     </div>
   );
 }
