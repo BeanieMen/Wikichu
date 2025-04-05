@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useUser } from "@clerk/clerk-react"; // Import Clerk's useUser hook
-import InventoryTable from "../components/inventoryTable"; // Assuming the component is in the 'components' folder
+import { useUser } from "@clerk/clerk-react";
+import InventoryTable from "../components/inventoryTable";
 
 interface Item {
   name: string;
@@ -13,7 +13,7 @@ interface Item {
 
 export default function InventoryPage() {
   const [items, setItems] = useState<Item[]>([]);
-  const { user } = useUser(); // Get current user from Clerk
+  const { user } = useUser();
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -22,13 +22,13 @@ export default function InventoryPage() {
         return;
       }
 
-      const userId = user.id; // Get Clerk user ID
+      const userId = user.id;
       const response = await fetch("/api/getStickersForUser", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ userId }), // Send userId in the request body
+        body: JSON.stringify({ userId }),
       });
 
       const data: Item[] = await response.json();
@@ -36,7 +36,7 @@ export default function InventoryPage() {
     };
 
     fetchItems();
-  }, [user]); // Only run this when the user is available
+  }, [user]);
 
   return (
     <div>
