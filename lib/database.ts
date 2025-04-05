@@ -2,11 +2,13 @@ import sqlite3 from "sqlite3";
 
 const database = new sqlite3.Database("main.db");
 
+// 🧱 Initialize all tables
 export function initDatabase() {
   const createUsersTable = `
     CREATE TABLE IF NOT EXISTS Users (
-      id TEXT PRIMARY KEY,
-      money INTEGER NOT NULL DEFAULT 0
+      id TEXT PRIMARY KEY, -- from Clerk
+      money INTEGER NOT NULL DEFAULT 0,
+      xp INTEGER NOT NULL DEFAULT 0
     );`;
 
   const createStickersTable = `
@@ -21,7 +23,7 @@ export function initDatabase() {
   const createInventoryTable = `
     CREATE TABLE IF NOT EXISTS Inventory (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      user_id INTEGER NOT NULL,
+      user_id TEXT NOT NULL,
       sticker_id INTEGER NOT NULL,
       FOREIGN KEY (user_id) REFERENCES Users(id) ON DELETE CASCADE,
       FOREIGN KEY (sticker_id) REFERENCES Stickers(id) ON DELETE CASCADE
@@ -41,17 +43,14 @@ export interface UserSticker {
   stickerDesc: string;
 }
 
-export async function addUser(money: number): Promise<number> {
+export async function addUser(id: string, money = 0, xp = 0): Promise<void> {
   return new Promise((resolve, reject) => {
     database.run(
-      "INSERT INTO Users (money) VALUES (?)",
-      [money],
-      function (err) {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(this.lastID);
-        }
+      "INSERT OR IGNORE INTO Users (id, money, xp) VALUES (?, ?, ?)",
+      [id, money, xp],
+      (err) => {
+        if (err) reject(err);
+        else resolve();
       }
     );
   });
@@ -60,12 +59,35 @@ export async function addUser(money: number): Promise<number> {
 export async function getUserById(userId: string): Promise<any> {
   return new Promise((resolve, reject) => {
     database.get("SELECT * FROM Users WHERE id = ?", [userId], (err, row) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(row);
-      }
+      if (err) reject(err);
+      else resolve(row);
     });
+  });
+}
+
+export async function addXp(userId: string, xpAmount: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    database.run(
+      "UPDATE Users SET xp = xp + ? WHERE id = ?",
+      [xpAmount, userId],
+      (err) => {
+        if (err) reject(err);
+        else resolve();
+      }
+    );
+  });
+}
+
+export async function addMoney(userId: string, amount: number): Promise<void> {
+  return new Promise((resolve, reject) => {
+    database.run(
+      "UPDATE Users SET money = money + ? WHERE id = ?",
+      [amount, userId],
+      (err) => {
+        if (err) reject(err);
+        else resolve();
+      }
+    );
   });
 }
 
@@ -78,11 +100,8 @@ export async function addStickerToInventory(
       "INSERT INTO Inventory (user_id, sticker_id) VALUES (?, ?)",
       [userId, stickerId],
       (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-        }
+        if (err) reject(err);
+        else resolve();
       }
     );
   });
@@ -101,11 +120,35 @@ export async function getUserStickers(userId: string): Promise<UserSticker[]> {
       WHERE Inventory.user_id = ?`;
 
     database.all(sql, [userId], (err, rows: UserSticker[]) => {
-      if (err) {
-        reject(err);
-      } else {
-        resolve(rows);
-      }
+      if (err) reject(err);
+      else resolve(rows);
+    });
+  });
+}
+
+// 📊 Get combined user stats for profile view
+export async function getUserStats(userId: string): Promise<{
+  money: number;
+  xp: number;
+  stickerCount: number;
+}> {
+  return new Promise((resolve, reject) => {
+    const sql = `
+      SELECT 
+        u.money, 
+        u.xp, 
+        COUNT(i.id) as stickerCount
+      FROM Users u
+      LEFT JOIN Inventory i ON u.id = i.user_id
+      WHERE u.id = ?
+      GROUP BY u.id`;
+
+    database.get(sql, [userId], (err, row) => {
+      if (err) reject(err);
+      else
+        resolve(
+          row as unknown as { money: number; xp: number; stickerCount: number }
+        );
     });
   });
 }

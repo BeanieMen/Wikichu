@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-react";
-import InventoryTable from "../components/inventoryTable";
+import InventoryTable from "../components/InventoryTable";
 
 interface Item {
   name: string;
