@@ -7,7 +7,7 @@ config();
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const { userId } = body;
-
+  console.log(userId);
   if (!userId) {
     return new Response(
       JSON.stringify({ error: "Missing question or answer" }),
