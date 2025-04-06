@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Usable } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 interface BaseQuestion {
   id: number;
@@ -91,16 +92,13 @@ export default function CarouselTestPage({
     params as unknown as Usable<{
       slug: string;
     }>
-  );
+  );  const { user } = useUser();
   const test = testContent[slug];
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
   const [isTestFinished, setIsTestFinished] = useState<boolean>(false);
-  const [results, setResults] = useState<Record<
-    number,
-    "correct" | "incorrect" | null
-  > | null>(null);
+  const [results, setResults] = useState<Record<number, "correct" | "incorrect" | null> | null>(null);
   const [score, setScore] = useState<number>(0);
 
   useEffect(() => {
@@ -117,9 +115,7 @@ export default function CarouselTestPage({
 
   const totalQuestions = test.questions.length;
   const currentQuestion =
-    currentQuestionIndex < totalQuestions
-      ? test.questions[currentQuestionIndex]
-      : null;
+    currentQuestionIndex < totalQuestions ? test.questions[currentQuestionIndex] : null;
 
   const handleChange = (questionId: number, value: string) => {
     if (!currentQuestion || questionId !== currentQuestion.id) return;
@@ -141,22 +137,18 @@ export default function CarouselTestPage({
     }
   };
 
-  const handleFinish = () => {
+  const handleFinish = async () => {
     if (isTestFinished) return;
 
     let correctCount = 0;
-    const calculatedResults: Record<number, "correct" | "incorrect" | null> =
-      {};
+    const calculatedResults: Record<number, "correct" | "incorrect" | null> = {};
 
-    test.questions.forEach((q) => {
+    // Evaluate each question
+    for (const q of test.questions) {
       const userAnswer = userAnswers[q.id];
       let isCorrect = false;
 
-      if (
-        userAnswer !== undefined &&
-        userAnswer !== null &&
-        userAnswer.trim() !== ""
-      ) {
+      if (userAnswer !== undefined && userAnswer !== null && userAnswer.trim() !== "") {
         switch (q.type) {
           case "true-false":
             isCorrect = (userAnswer === "True") === q.correctAnswer;
@@ -165,23 +157,43 @@ export default function CarouselTestPage({
             isCorrect = userAnswer === q.correctAnswer;
             break;
           case "text-input":
-            const expected = q.correctAnswer;
-            if (typeof expected === "string")
-              isCorrect =
-                userAnswer.trim().toLowerCase() ===
-                expected.trim().toLowerCase();
-            else
-              isCorrect = expected
-                .map((e) => e.trim().toLowerCase())
-                .includes(userAnswer.trim().toLowerCase());
+            try {
+              const response = await fetch("/api/reason", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  question: q.questionText,
+                  answer: userAnswer,
+                }),
+              });
+              const evalResult = await response.json();
+              // Mark as correct only if the confidence threshold is met
+              isCorrect = evalResult.confidenceThreshold >= 0.5;
+            } catch (error) {
+              console.error("Evaluation error:", error);
+            }
             break;
         }
         calculatedResults[q.id] = isCorrect ? "correct" : "incorrect";
         if (isCorrect) correctCount++;
       } else {
-        calculatedResults[q.id] = null; 
+        calculatedResults[q.id] = null;
       }
-    });
+    }
+
+    // Award coins: 100 coins per correct answer
+    if (user && correctCount > 0) {
+      const coinsAwarded = correctCount * 100;
+      try {
+        await fetch("/api/add-money", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId: user.id, amount: coinsAwarded }),
+        });
+      } catch (error) {
+        console.error("Error awarding coins:", error);
+      }
+    }
 
     setResults(calculatedResults);
     setScore(correctCount);
@@ -191,12 +203,8 @@ export default function CarouselTestPage({
 
   return (
     <div className="min-h-screen bg-yellow-50 flex flex-col p-4 md:p-8">
-      
       <div className="w-full max-w-4xl mx-auto mb-6">
-        <Link
-          href="/"
-          className="text-yellow-600 hover:text-yellow-800 mb-4 inline-block"
-        >
+        <Link href="/" className="text-yellow-600 hover:text-yellow-800 mb-4 inline-block">
           &larr; Back to Dashboard
         </Link>
         {/* Progress Bar */}
@@ -218,9 +226,7 @@ export default function CarouselTestPage({
       {/* Main Content Area */}
       <div className="flex-grow flex items-center justify-center">
         <div className="w-full max-w-2xl bg-white rounded-xl p-6 md:p-8 shadow-md">
-          {/* Final Results View */}
           {isTestFinished ? (
-            // ... (Final results JSX remains the same) ...
             <div className="text-center">
               <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
                 Test Complete!
@@ -228,9 +234,7 @@ export default function CarouselTestPage({
               <p className="text-xl font-semibold mb-6">{test.title}</p>
               <p
                 className={`text-3xl font-bold mb-8 ${
-                  totalQuestions > 0 && score / totalQuestions >= 0.7
-                    ? "text-green-600"
-                    : "text-red-600"
+                  totalQuestions > 0 && score / totalQuestions >= 0.7 ? "text-green-600" : "text-red-600"
                 }`}
               >
                 Score: {score} / {totalQuestions}
@@ -246,7 +250,7 @@ export default function CarouselTestPage({
                     </p>
                     {results && results[q.id] === "incorrect" && (
                       <p className="text-xs text-green-700">
-                        Correct:
+                        Correct:{" "}
                         {q.type === "true-false"
                           ? q.correctAnswer
                             ? "True"
@@ -281,12 +285,10 @@ export default function CarouselTestPage({
                 Back to Dashboard
               </Link>
             </div>
-          ) : /* Question View */
-          currentQuestion ? (
+          ) : currentQuestion ? (
             <div>
               <p className="font-semibold text-xl md:text-2xl mb-6 text-gray-800 text-center">
-                ({currentQuestionIndex + 1}/{totalQuestions})
-                {currentQuestion.questionText}
+                ({currentQuestionIndex + 1}/{totalQuestions}) {currentQuestion.questionText}
               </p>
               <div className="space-y-3 mb-8 min-h-[150px] text-black">
                 {(currentQuestion.type === "multiple-choice" ||
@@ -294,16 +296,14 @@ export default function CarouselTestPage({
                   currentQuestion.options.map((option, optionIndex) => (
                     <label
                       key={optionIndex}
-                      className="flex items-center space-x-3 p-3 rounded cursor-pointer border border-gray-200 hover:bg-yellow-50 has-[:checked]:bg-yellow-100 has-[:checked]:border-yellow-300 transition-colors duration-150"
+                      className="flex items-center space-x-3 p-3 rounded cursor-pointer border border-gray-200 hover:bg-yellow-50 transition-colors duration-150"
                     >
                       <input
                         type="radio"
                         name={`question-${currentQuestion.id}`}
                         value={option}
                         checked={userAnswers[currentQuestion.id] === option}
-                        onChange={(e) =>
-                          handleChange(currentQuestion.id, e.target.value)
-                        }
+                        onChange={(e) => handleChange(currentQuestion.id, e.target.value)}
                         className="form-radio h-5 w-5 text-yellow-600 focus:ring-yellow-500 shrink-0"
                       />
                       <span>{option}</span>
@@ -314,12 +314,8 @@ export default function CarouselTestPage({
                     type="text"
                     name={`question-${currentQuestion.id}`}
                     value={userAnswers[currentQuestion.id] || ""}
-                    onChange={(e) =>
-                      handleChange(currentQuestion.id, e.target.value)
-                    }
-                    placeholder={
-                      currentQuestion.placeholder || "Type your answer"
-                    }
+                    onChange={(e) => handleChange(currentQuestion.id, e.target.value)}
+                    placeholder={currentQuestion.placeholder || "Type your answer"}
                     className="w-full p-3 border rounded-md focus:outline-none border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
                   />
                 )}
@@ -331,7 +327,6 @@ export default function CarouselTestPage({
                   disabled={currentQuestionIndex === 0}
                   className="bg-gray-200 hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed text-gray-700 font-semibold py-2 px-6 rounded-lg transition duration-200"
                 >
-                  
                   Previous
                 </button>
                 {currentQuestionIndex < totalQuestions - 1 ? (
@@ -340,7 +335,6 @@ export default function CarouselTestPage({
                     onClick={handleNext}
                     className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-8 rounded-lg transition duration-200 text-lg"
                   >
-                    
                     Next
                   </button>
                 ) : (
@@ -349,7 +343,6 @@ export default function CarouselTestPage({
                     onClick={handleFinish}
                     className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-8 rounded-lg transition duration-200 text-lg"
                   >
-                    
                     Finish Test
                   </button>
                 )}

@@ -1,8 +1,9 @@
 // app/learn/[slug]/page.tsx
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import ReactMarkdown from 'react-markdown'; // Import the Markdown renderer
-import remarkGfm from 'remark-gfm';        // Import GFM plugin
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import ReactMarkdown from "react-markdown"; // Import the Markdown renderer
+import remarkGfm from "remark-gfm"; // Import GFM plugin
+import NextLessonButton from "@/app/components/NextLessonButton"; // Import the client component
 
 // Define the structure for learning content
 interface LearnMaterial {
@@ -13,8 +14,8 @@ interface LearnMaterial {
 // Define the learning materials mapped by slug
 // Content generated from Wikimedia Policies.txt (from previous step)
 const learnContent: Record<string, LearnMaterial> = {
-  'lesson-1-greetings': {
-    title: 'Lesson 1: Welcome & Core Principles',
+  "lesson-1-greetings": {
+    title: "Lesson 1: Welcome & Core Principles",
     content: `
 # Welcome to WikiChu Editing!
 
@@ -31,8 +32,8 @@ These guide how articles should be written:
 We'll explore these principles more in later lessons!
     `,
   },
-  'lesson-2-basic-edits': {
-    title: 'Lesson 2: Basic Edits & Foundational Policies',
+  "lesson-2-basic-edits": {
+    title: "Lesson 2: Basic Edits & Foundational Policies",
     content: `
 # Making Basic Edits
 
@@ -53,8 +54,8 @@ Simple edits like fixing typos or grammar help improve WikiChu. When making edit
 * Don't add your own ideas or analyses. Stick to what reliable sources say. We'll cover this more next lesson.
     `,
   },
-  'lesson-3-intermediate-edits': {
-    title: 'Lesson 3: Adding Content & Key Content Policies',
+  "lesson-3-intermediate-edits": {
+    title: "Lesson 3: Adding Content & Key Content Policies",
     content: `
 # Adding Content Responsibly
 
@@ -81,8 +82,8 @@ Adding information requires careful attention to several key content policies:
 * Remove any controversial claims that are unsourced or poorly sourced immediately. Avoid harmful language. Use reliable sources for claims, e.g., "According to a report from a reputable news source, Mary has faced criticism...".
     `,
   },
-  'lesson-4-advanced-edits': {
-    title: 'Lesson 4: Collaboration, Disputes & Advanced Policies',
+  "lesson-4-advanced-edits": {
+    title: "Lesson 4: Collaboration, Disputes & Advanced Policies",
     content: `
 # Advanced Topics and Community Interaction
 
@@ -112,18 +113,22 @@ Beyond basic editing, understanding collaboration, dispute resolution, and other
 
 // Define the order of the learning lessons
 const lessonOrder: string[] = [
-  'lesson-1-greetings',
-  'lesson-2-basic-edits',
-  'lesson-3-intermediate-edits',
-  'lesson-4-advanced-edits',
+  "lesson-1-greetings",
+  "lesson-2-basic-edits",
+  "lesson-3-intermediate-edits",
+  "lesson-4-advanced-edits",
 ];
 
 // Define the path to the test module that follows the last lesson
 // (Assuming the test slug from earlier examples)
-const testPath: string = '/test/test-5-check-your-knowledge';
+const testPath: string = "/test/test-5-check-your-knowledge";
 
 // The Page component
-export default function LearnLessonPage({ params }: { params: { slug: string } }) {
+export default function LearnLessonPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
   const { slug } = params;
   const lesson = learnContent[slug]; // Look up the content using the slug
 
@@ -136,7 +141,8 @@ export default function LearnLessonPage({ params }: { params: { slug: string } }
   let nextLink: string | null = null;
   const currentIndex = lessonOrder.indexOf(slug);
 
-  if (currentIndex !== -1) { // Check if the current slug is in our defined order
+  if (currentIndex !== -1) {
+    // Check if the current slug is in our defined order
     if (currentIndex < lessonOrder.length - 1) {
       // Not the last lesson, link to the next lesson in the order
       nextLink = `/learn/${lessonOrder[currentIndex + 1]}`;
@@ -150,7 +156,10 @@ export default function LearnLessonPage({ params }: { params: { slug: string } }
     <div className="min-h-screen bg-yellow-50 p-4 md:p-8">
       <div className="max-w-4xl mx-auto bg-white rounded-xl p-6 md:p-8 shadow-md">
         {/* Back Link */}
-        <Link href="/" className="text-yellow-600 hover:text-yellow-800 mb-6 inline-block text-sm">
+        <Link
+          href="/"
+          className="text-yellow-600 hover:text-yellow-800 mb-6 inline-block text-sm"
+        >
           &larr; Back to Dashboard
         </Link>
 
@@ -169,16 +178,11 @@ export default function LearnLessonPage({ params }: { params: { slug: string } }
 
         {/* Navigation Button */}
         {nextLink && (
-          <div className="mt-8 pt-6 border-t border-gray-200 text-center">
-            <Link
-              href={nextLink}
-              className="inline-block bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-8 rounded-lg transition duration-200 text-lg shadow"
-            >
-              {currentIndex === lessonOrder.length - 1 ? 'Go to Test' : 'Next Lesson'} &rarr;
-            </Link>
-          </div>
+          <NextLessonButton
+            nextLink={nextLink}
+            isLastLesson={currentIndex === lessonOrder.length - 1}
+          />
         )}
-
       </div>
     </div>
   );

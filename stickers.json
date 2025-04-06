@@ -1,0 +1,62 @@
+[
+  {
+    "stickerName": "BUNEARY_1.png",
+    "stickerDescription": "A cheerful and bouncy rabbit Pokémon that thrives in grassy fields.",
+    "sourceUrl": "/pkmn/BUNEARY_1.png",
+    "rarity": 1
+  },
+  {
+    "stickerName": "CASTFORM_4.png",
+    "stickerDescription": "A weather-shifting Pokémon that adapts to its surroundings with different forms.",
+    "sourceUrl": "/pkmn/CASTFORM_4.png",
+    "rarity": 1
+  },
+  {
+    "stickerName": "CHARGOO.png",
+    "stickerDescription": "This tiny spark bug stores electricity in its shell and zips around when excited.",
+    "sourceUrl": "/pkmn/CHARGOO.png",
+    "rarity": 1
+  },
+  {
+    "stickerName": "NOCTOWL_100.png",
+    "stickerDescription": "An older, wise owl Pokémon known for its silent flight and deep gaze.",
+    "sourceUrl": "/pkmn/NOCTOWL_100.png",
+    "rarity": 1
+  },
+  {
+    "stickerName": "FALINKS_1.png",
+    "stickerDescription": "A coordinated team of tiny fighters that move as one unified force.",
+    "sourceUrl": "/pkmn/FALINKS_1.png",
+    "rarity": 2
+  },
+  {
+    "stickerName": "PLATERIGUS.png",
+    "stickerDescription": "A mysterious steel-plated Pokémon with runic engravings across its armor.",
+    "sourceUrl": "/pkmn/PLATERIGUS.png",
+    "rarity": 2
+  },
+  {
+    "stickerName": "MORTARINE.png",
+    "stickerDescription": "An ominous fire-type Pokémon resembling a furnace, known to haunt old factories.",
+    "sourceUrl": "/pkmn/MORTARINE.png",
+    "rarity": 3
+  },
+  {
+    "stickerName": "GLYPTOBLOCK.png",
+    "stickerDescription": "A relic Pokémon made of ancient stone blocks, it guards sacred ruins.",
+    "sourceUrl": "/pkmn/GLYPTOBLOCK.png",
+    "rarity": 3
+  },
+  {
+    "stickerName": "SUFFERUB.png",
+    "stickerDescription": "A tragic, cursed Pokémon that emits sorrowful cries in the night.",
+    "sourceUrl": "/pkmn/SUFFERUB.png",
+    "rarity": 4
+  },
+  {
+    "stickerName": "TRAUMATISSE.png",
+    "stickerDescription": "A legendary fairy-ghost Pokémon that appears in nightmares to test courage.",
+    "sourceUrl": "/pkmn/TRAUMATISSE.png",
+    "rarity": 4
+  }
+]

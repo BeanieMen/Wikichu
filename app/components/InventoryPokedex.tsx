@@ -18,20 +18,7 @@ interface InventoryTableProps {
 
 export default function InventoryPokédex({ items }: InventoryTableProps) {
   const { user } = useUser();
-  items = [
-    {
-      name: "charmander",
-      sourceUrl: "/globe.svg",
-      rarity: 4,
-      stickerDesc: "A shiny charmander sticker",
-    },
-    {
-      name: "",
-      sourceUrl: "/globe.svg",
-      rarity: 4,
-      stickerDesc: "A shiny charmander sticker",
-    },
-  ];
+  
   useEffect(() => {
     if (user) {
       console.log("User ID:", user.id);
@@ -106,7 +93,7 @@ export default function InventoryPokédex({ items }: InventoryTableProps) {
                       : "text-gray-600"
                   }`}
                 >
-                  {sticker.rarity}/5
+                  {" "} {sticker.rarity}/4
                 </span>
               </div>
             </div>
