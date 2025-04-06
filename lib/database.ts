@@ -246,7 +246,6 @@ const stickers = [
   },
 ];
 
-// Main purchase function that handles the transaction and awarding a sticker
 export async function purchaseChest(
   userId: string,
   chestPrice: number,
@@ -257,22 +256,16 @@ export async function purchaseChest(
   rarity: number;
   stickerDesc: string;
 }> {
-  // Check if the user has enough money
   const user = await getUserById(userId);
   if (!user || user.money < chestPrice) {
     throw new Error("Insufficient funds");
   }
-  // Subtract the chest price from the user’s money
   await removeMoney(userId, chestPrice);
-  // Choose a random sticker that matches the chest’s rarity
   const availableStickers = stickers.filter((s) => s.rarity === chestRarity);
   const randomSticker =
     availableStickers[Math.floor(Math.random() * availableStickers.length)];
-  // Insert the sticker into the Stickers table
   const stickerId = await insertSticker(randomSticker);
-  // Add the sticker to the user’s inventory
   await addStickerToInventory(userId, stickerId);
-  // Return the sticker info for use in the popup
   return {
     name: randomSticker.stickerName,
     sourceUrl: randomSticker.sourceUrl,
