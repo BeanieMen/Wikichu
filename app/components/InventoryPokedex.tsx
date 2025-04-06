@@ -77,7 +77,7 @@ export default function InventoryPokédex({ items }: InventoryTableProps) {
               />
 
               <h3 className="text-lg font-bold text-gray-800 mb-1">
-                {sticker.name}
+                {sticker.name[0].toUpperCase() + sticker.name.split('').splice(1).join('').split('_')[0].split(".")[0].toLowerCase()}
               </h3>
               <p className="text-sm text-gray-600 mb-2 line-clamp-2">
                 {sticker.stickerDesc}

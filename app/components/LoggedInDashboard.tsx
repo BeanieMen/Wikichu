@@ -224,7 +224,7 @@ export default function LoggedInDashboard() {
         </h3>
         <p className="text-sm text-gray-600 mt-1 md:mt-2">
           If you're unsure about any edits or need help, feel free to reach out
-          to the community or visit our help center.
+          to the community
         </p>
       </div>
       {/* Main Content (Center) */}

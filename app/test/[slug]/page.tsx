@@ -92,14 +92,19 @@ export default function CarouselTestPage({
     params as unknown as Usable<{
       slug: string;
     }>
-  );  const { user } = useUser();
+  );
+  const { user } = useUser();
   const test = testContent[slug];
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
   const [userAnswers, setUserAnswers] = useState<Record<number, string>>({});
   const [isTestFinished, setIsTestFinished] = useState<boolean>(false);
-  const [results, setResults] = useState<Record<number, "correct" | "incorrect" | null> | null>(null);
+  const [results, setResults] = useState<Record<
+    number,
+    "correct" | "incorrect" | null
+  > | null>(null);
   const [score, setScore] = useState<number>(0);
+  const [isEvaluating, setIsEvaluating] = useState<boolean>(false);
 
   useEffect(() => {
     setCurrentQuestionIndex(0);
@@ -115,7 +120,9 @@ export default function CarouselTestPage({
 
   const totalQuestions = test.questions.length;
   const currentQuestion =
-    currentQuestionIndex < totalQuestions ? test.questions[currentQuestionIndex] : null;
+    currentQuestionIndex < totalQuestions
+      ? test.questions[currentQuestionIndex]
+      : null;
 
   const handleChange = (questionId: number, value: string) => {
     if (!currentQuestion || questionId !== currentQuestion.id) return;
@@ -140,15 +147,17 @@ export default function CarouselTestPage({
   const handleFinish = async () => {
     if (isTestFinished) return;
 
-    let correctCount = 0;
-    const calculatedResults: Record<number, "correct" | "incorrect" | null> = {};
+    setIsEvaluating(true); // Start evaluation
 
-    // Evaluate each question
+    let correctCount = 0;
+    const calculatedResults: Record<number, "correct" | "incorrect" | null> =
+      {};
+
     for (const q of test.questions) {
       const userAnswer = userAnswers[q.id];
       let isCorrect = false;
 
-      if (userAnswer !== undefined && userAnswer !== null && userAnswer.trim() !== "") {
+      if (userAnswer !== undefined && userAnswer.trim() !== "") {
         switch (q.type) {
           case "true-false":
             isCorrect = (userAnswer === "True") === q.correctAnswer;
@@ -167,10 +176,10 @@ export default function CarouselTestPage({
                 }),
               });
               const evalResult = await response.json();
-              // Mark as correct only if the confidence threshold is met
               isCorrect = evalResult.confidenceThreshold >= 0.5;
             } catch (error) {
               console.error("Evaluation error:", error);
+              isCorrect = userAnswer === q.correctAnswer
             }
             break;
         }
@@ -181,7 +190,6 @@ export default function CarouselTestPage({
       }
     }
 
-    // Award coins: 100 coins per correct answer
     if (user && correctCount > 0) {
       const coinsAwarded = correctCount * 100;
       try {
@@ -198,13 +206,17 @@ export default function CarouselTestPage({
     setResults(calculatedResults);
     setScore(correctCount);
     setIsTestFinished(true);
+    setIsEvaluating(false); // End evaluation
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (
     <div className="min-h-screen bg-yellow-50 flex flex-col p-4 md:p-8">
       <div className="w-full max-w-4xl mx-auto mb-6">
-        <Link href="/" className="text-yellow-600 hover:text-yellow-800 mb-4 inline-block">
+        <Link
+          href="/"
+          className="text-yellow-600 hover:text-yellow-800 mb-4 inline-block"
+        >
           &larr; Back to Dashboard
         </Link>
         {/* Progress Bar */}
@@ -221,6 +233,12 @@ export default function CarouselTestPage({
             ></div>
           </div>
         )}
+
+        {isEvaluating && (
+          <div className="text-center text-yellow-600 font-semibold">
+            Please wait, checking your answer...
+          </div>
+        )}
       </div>
 
       {/* Main Content Area */}
@@ -234,11 +252,14 @@ export default function CarouselTestPage({
               <p className="text-xl font-semibold mb-6">{test.title}</p>
               <p
                 className={`text-3xl font-bold mb-8 ${
-                  totalQuestions > 0 && score / totalQuestions >= 0.7 ? "text-green-600" : "text-red-600"
+                  totalQuestions > 0 && score / totalQuestions >= 0.7
+                    ? "text-green-600"
+                    : "text-red-600"
                 }`}
               >
-                Score: {score} / {totalQuestions}
+                Score: {score} / {totalQuestions} <br/> You earned {score * 50} coins
               </p>
+              <p></p>
               <div className="text-left space-y-4 mb-8 -mt-5 max-h-60 overflow-y-auto p-3 border rounded bg-gray-50">
                 {test.questions.map((q, index) => (
                   <div key={q.id} className="border-b pb-2">
@@ -250,7 +271,7 @@ export default function CarouselTestPage({
                     </p>
                     {results && results[q.id] === "incorrect" && (
                       <p className="text-xs text-green-700">
-                        Correct:{" "}
+                        Correct:
                         {q.type === "true-false"
                           ? q.correctAnswer
                             ? "True"
@@ -288,7 +309,8 @@ export default function CarouselTestPage({
           ) : currentQuestion ? (
             <div>
               <p className="font-semibold text-xl md:text-2xl mb-6 text-gray-800 text-center">
-                ({currentQuestionIndex + 1}/{totalQuestions}) {currentQuestion.questionText}
+                ({currentQuestionIndex + 1}/{totalQuestions}){" "}
+                {currentQuestion.questionText}
               </p>
               <div className="space-y-3 mb-8 min-h-[150px] text-black">
                 {(currentQuestion.type === "multiple-choice" ||
@@ -303,7 +325,9 @@ export default function CarouselTestPage({
                         name={`question-${currentQuestion.id}`}
                         value={option}
                         checked={userAnswers[currentQuestion.id] === option}
-                        onChange={(e) => handleChange(currentQuestion.id, e.target.value)}
+                        onChange={(e) =>
+                          handleChange(currentQuestion.id, e.target.value)
+                        }
                         className="form-radio h-5 w-5 text-yellow-600 focus:ring-yellow-500 shrink-0"
                       />
                       <span>{option}</span>
@@ -314,8 +338,12 @@ export default function CarouselTestPage({
                     type="text"
                     name={`question-${currentQuestion.id}`}
                     value={userAnswers[currentQuestion.id] || ""}
-                    onChange={(e) => handleChange(currentQuestion.id, e.target.value)}
-                    placeholder={currentQuestion.placeholder || "Type your answer"}
+                    onChange={(e) =>
+                      handleChange(currentQuestion.id, e.target.value)
+                    }
+                    placeholder={
+                      currentQuestion.placeholder || "Type your answer"
+                    }
                     className="w-full p-3 border rounded-md focus:outline-none border-gray-300 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500"
                   />
                 )}

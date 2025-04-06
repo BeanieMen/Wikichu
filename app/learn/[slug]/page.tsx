@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown"; // Import the Markdown renderer
 import remarkGfm from "remark-gfm"; // Import GFM plugin
 import NextLessonButton from "@/app/components/NextLessonButton"; // Import the client component
+import React, { Usable } from "react";
 
 // Define the structure for learning content
 interface LearnMaterial {
@@ -129,7 +130,13 @@ export default function LearnLessonPage({
 }: {
   params: { slug: string };
 }) {
-  const { slug } = params;
+  const { slug } = React.use<{
+    slug: string;
+  }>(
+    params as unknown as Usable<{
+      slug: string;
+    }>
+  );
   const lesson = learnContent[slug]; // Look up the content using the slug
 
   // If the slug doesn't match any defined content, show a 404 page
@@ -178,10 +185,15 @@ export default function LearnLessonPage({
 
         {/* Navigation Button */}
         {nextLink && (
-          <NextLessonButton
-            nextLink={nextLink}
-            isLastLesson={currentIndex === lessonOrder.length - 1}
-          />
+          <div className="mt-8 flex items-center justify-between">
+            <span className="text-green-600 font-semibold">
+              🎉 You earned 50 coins!
+            </span>
+            <NextLessonButton
+              nextLink={nextLink}
+              isLastLesson={currentIndex === lessonOrder.length - 1}
+            />
+          </div>
         )}
       </div>
     </div>
